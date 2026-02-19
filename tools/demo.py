@@ -1,5 +1,6 @@
 import argparse
 import glob
+import os
 from pathlib import Path
 
 try:
@@ -68,6 +69,10 @@ def parse_config():
                         help='specify the point cloud data file or directory')
     parser.add_argument('--ckpt', type=str, default=None, help='specify the pretrained model')
     parser.add_argument('--ext', type=str, default='.bin', help='specify the extension of your point cloud data file')
+    parser.add_argument('--save_path', type=str, default=None,
+                        help='directory to save visualization results as images (headless mode)')
+    parser.add_argument('--no_display', action='store_true', default=False,
+                        help='force headless mode: save results to images instead of displaying GUI')
 
     args = parser.parse_args()
 
@@ -90,6 +95,13 @@ def main():
     model.load_params_from_file(filename=args.ckpt, logger=logger, to_cpu=True)
     model.cuda()
     model.eval()
+    in_docker = os.path.exists('/.dockerenv')
+    headless = args.no_display or args.save_path is not None or in_docker or not os.environ.get('DISPLAY', '')
+    if headless:
+        save_dir = args.save_path if args.save_path else 'demo_output'
+        os.makedirs(save_dir, exist_ok=True)
+        logger.info(f'Headless mode: saving results to {save_dir}/')
+
     with torch.no_grad():
         for idx, data_dict in enumerate(demo_dataset):
             logger.info(f'Visualized sample index: \t{idx + 1}')
@@ -97,10 +109,23 @@ def main():
             load_data_to_gpu(data_dict)
             pred_dicts, _ = model.forward(data_dict)
 
+            save_path = os.path.join(save_dir, f'result_{idx:04d}.png') if headless else None
             V.draw_scenes(
                 points=data_dict['points'][:, 1:], ref_boxes=pred_dicts[0]['pred_boxes'],
-                ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']
+                ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels'],
+                save_path=save_path
             )
+
+            # print("\n" + "="*50)
+            # print(f"검출 성공! 모델: PV-RCNN")
+            # print(f"검출된 객체 수: {len(pred_dicts[0]['pred_boxes'])}")
+            
+            # for i in range(len(pred_dicts[0]['pred_boxes'])):
+            #     box = pred_dicts[0]['pred_boxes'][i]
+            #     score = pred_dicts[0]['pred_scores'][i]
+            #     label = pred_dicts[0]['pred_labels'][i]
+            #     print(f"[{i}] Label: {label}, Score: {score:.4f}, Box: {box.tolist()}")
+            # print("="*50 + "\n")
 
             if not OPEN3D_FLAG:
                 mlab.show(stop=True)
