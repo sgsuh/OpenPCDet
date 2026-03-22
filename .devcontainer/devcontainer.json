@@ -1,0 +1,42 @@
+{
+    "name": "open-pc-det",
+    "build": {
+      "dockerfile": "Dockerfile",
+      "context": ".",
+      "args": {
+        "USER_NAME": "sgsuh"
+      }
+    },
+    "containerEnv": {
+      "NVIDIA_VISIBLE_DEVICES": "all",
+      "NVIDIA_DRIVER_CAPABILITIES": "all",
+      "DISPLAY": "${localEnv:DISPLAY}",
+      "XAUTHORITY": "${localEnv:XAUTHORITY}"
+    },
+    "mounts": [
+      "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+      "source=/dev,target=/dev,type=bind,consistency=cached"
+    ],
+    "capAdd": [
+      "SYS_PTRACE"
+    ],
+    "privileged": true,
+    "securityOpt": [
+      "seccomp=unconfined"
+    ],
+    "runArgs": [
+      "--pid=host",
+      "--ipc=host",
+      "--network=host",
+      "--runtime=nvidia",
+      "--gpus=all"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-vscode.cpptools-extension-pack"
+            ]
+        }
+    }
+  }

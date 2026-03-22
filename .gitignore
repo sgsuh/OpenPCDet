@@ -7,11 +7,17 @@ data/
 venv/
 *.idea/
 *.so
-*.yaml
-*.sh
+# *.yaml
+# *.sh
 *.pth
 *.pkl
 *.zip
 *.bin
 output
 version.py
+*.png
+*.onnx
+*.cache
+*.plan
+*.log
+.vscode
