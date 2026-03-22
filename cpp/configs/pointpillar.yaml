@@ -1,0 +1,30 @@
+# PointPillars Inference Config
+
+model_file: "../model/pointpillar.plan"
+
+voxelization:
+  min_range: [0.0, -39.68, -3.0]
+  max_range: [69.12, 39.68, 1.0]
+  voxel_size: [0.16, 0.16, 4.0]
+  max_voxels: 40000
+  max_points_per_voxel: 32
+  max_points: 300000
+  num_feature: 4
+
+postprocess:
+  num_classes: 3
+  num_anchors: 6
+  len_per_anchor: 4
+  # [l, w, h, yaw] per anchor
+  anchors:
+    - [3.9,  1.6,  1.56, 0.0 ]   # Car, 0 deg
+    - [3.9,  1.6,  1.56, 1.57]   # Car, 90 deg
+    - [0.8,  0.6,  1.73, 0.0 ]   # Pedestrian, 0 deg
+    - [0.8,  0.6,  1.73, 1.57]   # Pedestrian, 90 deg
+    - [1.76, 0.6,  1.73, 0.0 ]   # Cyclist, 0 deg
+    - [1.76, 0.6,  1.73, 1.57]   # Cyclist, 90 deg
+  anchor_bottom_heights: [-1.78, -0.6, -0.6]  # per class
+  num_box_values: 7
+  score_thresh: 0.1
+  dir_offset: 0.78539
+  nms_thresh: 0.01
